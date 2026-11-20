@@ -1,0 +1,32 @@
+variable "project_name" {
+  type    = string
+  default = "{{ project_name }}"
+}
+
+variable "aws_region" {
+  type    = string
+  default = "{{ region }}"
+}
+
+# >>> USER: required
+variable "aws_access_key" {
+  type      = string
+  sensitive = true
+}
+
+# >>> USER: required
+variable "aws_secret_key" {
+  type      = string
+  sensitive = true
+}
+{% for v in extra_vars %}
+
+# >>> USER: required
+variable "{{ v.name }}" {
+  description = "{{ v.description }}"
+  type        = string
+{% if v.sensitive %}
+  sensitive   = true
+{% endif %}
+}
+{% endfor %}
