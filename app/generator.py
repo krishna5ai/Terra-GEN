@@ -49,6 +49,8 @@ def generate(req: dict, out_dir: str = "output") -> dict:
         "instance_type": req.get("instance_type", "t3.micro"),
         "db_engine": db_engine,
         "db_port": DB_PORTS[db_engine],
+        "db_instance_class": req.get("db_instance_class", "db.t3.micro"),
+        "db_multi_az": req.get("db_multi_az", False),
     }
 
     files = ["providers.tf", "variables.tf", "terraform.tfvars"]

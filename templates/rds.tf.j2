@@ -26,7 +26,7 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_db_instance" "main" {
   identifier             = "${var.project_name}-db"
   engine                 = "{{ db_engine }}"
-  instance_class         = "db.t3.micro"
+  instance_class         = "{{ db_instance_class }}"
   allocated_storage      = 20
   storage_type           = "gp3"
   storage_encrypted      = true
@@ -36,5 +36,6 @@ resource "aws_db_instance" "main" {
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.db.id]
   publicly_accessible    = false
+  multi_az               = {{ "true" if db_multi_az else "false" }}
   skip_final_snapshot    = true # set to false for production data
 }

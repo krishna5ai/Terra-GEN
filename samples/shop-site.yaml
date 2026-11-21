@@ -1,0 +1,22 @@
+project_name: shop-site
+region: mumbai
+environment: dev
+
+budget: low
+high_availability: false
+expected_traffic: low
+sensitive_data: false
+
+components:
+  network: true
+  web_server: true
+  load_balancer: false
+  database: true
+  storage: true
+  cdn: false
+  serverless_api: false
+  monitoring: true
+
+details:
+  database_engine: mysql
+  notes: "VPN to office; daily email report"

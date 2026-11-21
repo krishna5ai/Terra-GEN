@@ -1,13 +1,18 @@
+import sys
+from pathlib import Path
+
+from app.evaluator import build_report, evaluate, load_requirement
 from app.generator import generate
 
-req = {
-    "project_name": "demo-app",
-    "region": "mumbai",
-    "components": ["ec2", "rds", "s3"],   # vpc is added automatically
-    "instance_type": "t3.micro",
-    "db_engine": "mysql",
-}
+path = sys.argv[1] if len(sys.argv) > 1 else "samples/shop-site.yaml"
 
-result = generate(req)
-print("Components:", ", ".join(result["components"]))
-print("Files     :", ", ".join(result["files"]))
+requirement = load_requirement(path)
+result = evaluate(requirement)
+generated = generate(result["generate_req"])
+
+report = build_report(requirement, generated["components"],
+                      result["decisions"], result["not_covered"])
+(Path(__file__).parent / "output" / "REPORT.md").write_text(report)
+
+print(report)
+print("Files:", ", ".join(generated["files"] + ["REPORT.md"]))
