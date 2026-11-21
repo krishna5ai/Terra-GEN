@@ -1,0 +1,40 @@
+resource "aws_security_group" "db" {
+  name_prefix = "${var.project_name}-db-"
+  description = "Database access"
+  vpc_id      = aws_vpc.main.id
+{% if "ec2" in components %}
+
+  ingress {
+    description     = "Database port from the web server only"
+    from_port       = {{ db_port }}
+    to_port         = {{ db_port }}
+    protocol        = "tcp"
+    security_groups = [aws_security_group.web.id]
+  }
+{% endif %}
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_db_subnet_group" "main" {
+  name_prefix = "${var.project_name}-"
+  subnet_ids  = aws_subnet.private[*].id
+}
+
+resource "aws_db_instance" "main" {
+  identifier             = "${var.project_name}-db"
+  engine                 = "{{ db_engine }}"
+  instance_class         = "db.t3.micro"
+  allocated_storage      = 20
+  storage_type           = "gp3"
+  storage_encrypted      = true
+  db_name                = "appdb"
+  username               = "dbadmin"
+  password               = var.db_password # >>> USER: set in terraform.tfvars
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [aws_security_group.db.id]
+  publicly_accessible    = false
+  skip_final_snapshot    = true # set to false for production data
+}

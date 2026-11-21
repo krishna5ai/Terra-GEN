@@ -1,0 +1,23 @@
+{% if "vpc" in components %}
+output "vpc_id" {
+  value = aws_vpc.main.id
+}
+{% endif %}
+{% if "ec2" in components %}
+
+output "web_public_ip" {
+  value = aws_instance.web.public_ip
+}
+{% endif %}
+{% if "rds" in components %}
+
+output "db_endpoint" {
+  value = aws_db_instance.main.endpoint
+}
+{% endif %}
+{% if "s3" in components %}
+
+output "bucket_name" {
+  value = aws_s3_bucket.main.id
+}
+{% endif %}
