@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
@@ -21,18 +22,28 @@ REGION_CODES = {
 
 DB_PORTS = {"mysql": 3306, "postgres": 5432}
 
+GITIGNORE = "terraform.tfvars\n*.tfstate*\n.terraform/\n"
+
+
+def _banner(title: str) -> str:
+    line = "# " + "=" * 60
+    return f"{line}\n# {title}\n{line}\n"
+
 
 def generate(req: dict, out_dir: str = "output") -> dict:
-    """Create the Terraform files for one requirement.
+    """Create merged/ (one main.tf) and split/ (one file per part).
 
-    Returns {"components": [...], "files": [...]}.
+    Returns {"components": [...], "files": [...]} with paths relative to out_dir.
     """
     out = BASE_DIR / out_dir
     out.mkdir(exist_ok=True)
 
-    # Remove files from a previous run so old components do not linger
+    # Remove everything from a previous run so old components do not linger
     for old in list(out.glob("*.tf")) + list(out.glob("*.tfvars")):
         old.unlink()
+    (out / ".gitignore").unlink(missing_ok=True)
+    for sub in ("merged", "split"):
+        shutil.rmtree(out / sub, ignore_errors=True)
 
     components = resolve(req.get("components", []))
 
@@ -53,13 +64,38 @@ def generate(req: dict, out_dir: str = "output") -> dict:
         "db_multi_az": req.get("db_multi_az", False),
     }
 
-    files = ["providers.tf", "variables.tf", "terraform.tfvars"]
-    files += [f"{name}.tf" for name in components]
-    files += ["outputs.tf"]
+    # (section title, template file) in the order they appear
+    parts = [("Provider and settings", "providers.tf"), ("Variables", "variables.tf")]
+    parts += [(COMPONENTS[name]["label"], f"{name}.tf") for name in components]
+    parts += [("Outputs", "outputs.tf")]
 
-    for filename in files:
-        text = env.get_template(f"{filename}.j2").render(**ctx)
-        (out / filename).write_text(text)
+    rendered = [
+        (title, filename, env.get_template(f"{filename}.j2").render(**ctx))
+        for title, filename in parts
+    ]
+    tfvars = env.get_template("terraform.tfvars.j2").render(**ctx)
 
-    (out / ".gitignore").write_text("terraform.tfvars\n*.tfstate*\n.terraform/\n")
-    return {"components": components, "files": files + [".gitignore"]}
+    files = []
+
+    # Option A: one merged file
+    merged = out / "merged"
+    merged.mkdir()
+    body = "\n".join(
+        _banner(title) + "\n" + text.strip() + "\n" for title, _, text in rendered
+    )
+    (merged / "main.tf").write_text(body)
+    (merged / "terraform.tfvars").write_text(tfvars)
+    (merged / ".gitignore").write_text(GITIGNORE)
+    files += ["merged/main.tf", "merged/terraform.tfvars", "merged/.gitignore"]
+
+    # Option B: one file per part (vpc.tf, s3.tf, ...)
+    split = out / "split"
+    split.mkdir()
+    for _, filename, text in rendered:
+        (split / filename).write_text(text)
+        files.append(f"split/{filename}")
+    (split / "terraform.tfvars").write_text(tfvars)
+    (split / ".gitignore").write_text(GITIGNORE)
+    files += ["split/terraform.tfvars", "split/.gitignore"]
+
+    return {"components": components, "files": files}

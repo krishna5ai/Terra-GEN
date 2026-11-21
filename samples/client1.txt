@@ -1,0 +1,5 @@
+Our client runs an online shop with about 5,000 users.
+The shop needs a web server and a MySQL database, but no CDN.
+The budget is low and the site must not go down during sales.
+Product images should be stored safely.
+They also want a VPN to their office.

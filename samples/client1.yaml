@@ -1,0 +1,19 @@
+project_name: client1
+region: mumbai
+environment: dev
+budget: low
+high_availability: true
+expected_traffic: medium
+sensitive_data: false
+components:
+  network: true
+  web_server: true
+  database: true
+  storage: true
+  load_balancer: false
+  cdn: false
+  serverless_api: false
+  monitoring: false
+details:
+  database_engine: mysql
+  notes: They also want a VPN to their office
