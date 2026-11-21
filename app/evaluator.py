@@ -112,6 +112,10 @@ def evaluate(req: dict) -> dict:
     if req.get("expected_traffic") == "high":
         not_covered.append("CDN and load balancer are recommended for high traffic: no template yet")
 
+    # 6b. Links the generated script does not create
+    if "ec2" in resolved and "s3" in resolved:
+        not_covered.append("EC2 access to the S3 bucket needs an IAM role: no template yet")
+
     # 7. Free-text notes from the client are never dropped
     for note in str(details.get("notes", "")).split(";"):
         if note.strip():
