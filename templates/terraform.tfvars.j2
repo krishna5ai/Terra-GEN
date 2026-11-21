@@ -1,0 +1,7 @@
+# >>> USER: fill in every value below, then run terraform init / plan / apply
+
+aws_access_key = "FILL_YOUR_ACCESS_KEY"
+aws_secret_key = "FILL_YOUR_SECRET_KEY"
+{% for v in extra_vars %}
+{{ v.name }} = "{{ v.placeholder }}"
+{% endfor %}
