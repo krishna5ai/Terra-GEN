@@ -3,3 +3,8 @@ __pycache__/
 output/
 *.tfstate*
 .terraform/
+.env
+samples/*
+!samples/shop-site.yaml
+!samples/db-only.yaml
+!samples/client1.txt
