@@ -1,0 +1,24 @@
+project_name: e-commerce-website-on-aws
+region: mumbai
+environment: dev
+budget: medium
+high_availability: false
+expected_traffic: low
+sensitive_data: false
+components:
+  network: true
+  web_server: true
+  database: true
+  storage: true
+  load_balancer: true
+  cdn: false
+  serverless_api: false
+  monitoring: true
+details:
+  database_engine: mysql
+  notes: Requirements:; Create a VPC with CIDR block 10; 0; 0; 0/16; Create 2 public
+    subnets and 2 private subnets across two Availability Zones; Create an Internet
+    Gateway for internet connectivity; Create a NAT Gateway for private subnet internet
+    access; Configure Security Groups to allow HTTP (80), HTTPS (443), and SSH (22)
+    access with appropriate restrictions; Create IAM roles with minimum required permissions;
+    Use Terraform variables

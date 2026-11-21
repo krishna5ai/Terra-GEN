@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>From client requirement to Terraform in minutes</h1>
+<p class="sub">Paste the client's full requirement. Terra-GEN picks the AWS services, draws the architecture and writes the Terraform. You never enter AWS keys on this website.</p>
+{% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+<form class="card" method="post" action="{{ url_for('understand') }}">
+<label for="pn">Project name</label>
+<input id="pn" type="text" name="project_name" value="{{ name }}" placeholder="shop-site" maxlength="40" required>
+<label for="req">Client requirement</label>
+<textarea id="req" name="requirement" rows="12" maxlength="20000" required placeholder="Paste everything the client asked for.">{{ text }}</textarea>
+<div class="row">
+<button class="btn" type="submit">Understand requirement</button>
+<button class="btn ghost" type="button" id="example">Use an example</button>
+</div>
+</form>
+<script>
+document.getElementById("example").addEventListener("click", function () {
+  document.getElementById("req").value = {{ example|tojson }};
+  if (!document.getElementById("pn").value) { document.getElementById("pn").value = "shop-site"; }
+});
+</script>
+{% endblock %}

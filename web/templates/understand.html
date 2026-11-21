@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Check what we understood</h1>
+<p class="sub">Terra-GEN reads keywords, so please confirm this before generating. Fix anything wrong in the box below.</p>
+{% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+{% if understood %}
+<section class="card">
+<h2>What we understood</h2>
+<ul class="list">{% for line in understood %}<li>{{ line }}</li>{% endfor %}</ul>
+{% for w in warnings %}<div class="note" role="status"><strong>Please check:</strong> {{ w }}</div>{% endfor %}
+{% if not_understood %}
+<div class="note" role="status"><strong>Not understood</strong> (goes to the "write manually" list):
+<ul class="list">{% for s in not_understood %}<li>{{ s }}</li>{% endfor %}</ul></div>
+{% endif %}
+</section>
+{% endif %}
+<form class="card" method="post" action="{{ url_for('generate_route') }}">
+<label for="yaml">Requirement (editable)</label>
+<p class="hint">Set a component to <code>true</code> or <code>false</code>, or change region, budget and the other values.</p>
+<textarea id="yaml" class="mono" name="yaml_text" rows="26" spellcheck="false">{{ yaml_text }}</textarea>
+<div class="row">
+<button class="btn" type="submit">Generate Terraform</button>
+<a class="btn ghost" href="{{ url_for('index') }}">Start over</a>
+</div>
+</form>
+{% endblock %}

@@ -36,6 +36,30 @@ COST = {
 }
 
 
+def notes(components, ctx):
+    """Return {"flow": [...], "security": [...], "cost": [...]} for the components."""
+    flow = []
+    if "ec2" in components:
+        flow.append("Users reach the web server through the internet gateway on port 80.")
+    if "ec2" in components and "rds" in components:
+        flow.append(
+            f"The web server talks to the database on port {ctx['db_port']}. "
+            "The database sits in private subnets and accepts traffic only from the web server."
+        )
+    if "rds" in components and "ec2" not in components:
+        flow.append("The database sits in private subnets with no public access.")
+    if "s3" in components:
+        flow.append("The S3 bucket is private and has no public access.")
+
+    def pick(table):
+        items = []
+        for name in components:
+            items += table.get(name, [])
+        return items
+
+    return {"flow": flow, "security": pick(SECURITY), "cost": pick(COST)}
+
+
 def _mermaid(components, ctx):
     region_code = REGION_CODES[ctx["region"]]
     region_name = REGION_NAMES[ctx["region"]]
@@ -80,30 +104,16 @@ def _mermaid(components, ctx):
 
 def build_architecture(project_name, components, ctx):
     """ctx needs: region, instance_type, db_engine, db_instance_class, db_multi_az, db_port."""
-    flow = []
-    if "ec2" in components:
-        flow.append("Users reach the web server through the internet gateway on port 80.")
-    if "ec2" in components and "rds" in components:
-        flow.append(
-            f"The web server talks to the database on port {ctx['db_port']}. "
-            "The database sits in private subnets and accepts traffic only from the web server."
-        )
-    if "rds" in components and "ec2" not in components:
-        flow.append("The database sits in private subnets with no public access.")
-    if "s3" in components:
-        flow.append("The S3 bucket is private and has no public access.")
+    n = notes(components, ctx)
 
-    def bullets(table):
-        items = []
-        for name in components:
-            items += table.get(name, [])
+    def bullets(items):
         return "\n".join(f"- {i}" for i in items) or "- None"
 
     return (
         f"# {project_name}: architecture\n\n"
         f"```mermaid\n{_mermaid(components, ctx)}\n```\n\n"
-        f"## How traffic flows\n" + "\n".join(f"- {f}" for f in flow) + "\n\n"
-        f"## Security\n{bullets(SECURITY)}\n\n"
-        f"## Cost notes\n{bullets(COST)}\n\n"
+        f"## How traffic flows\n{bullets(n['flow'])}\n\n"
+        f"## Security\n{bullets(n['security'])}\n\n"
+        f"## Cost notes\n{bullets(n['cost'])}\n\n"
         "Check current prices with the AWS Pricing Calculator before quoting a total to a client.\n"
     )
